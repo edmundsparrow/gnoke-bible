@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Settings — Gnoke Bible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="icon"    type="image/png" href="../global.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <script>(function(){var t=localStorage.getItem('gnoke_bible_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    :root {
+      --accent:     #8b2a1f;
+      --accent-dk:  #6e1f16;
+      --accent-lt:  rgba(139,42,31,0.10);
+      --accent-txt: #6e1f16;
+      --accent-dim: rgba(139,42,31,0.12);
+      --text2:      #8b2a1f;
+    }
+    [data-theme="dark"] {
+      --accent:     #d4614e;
+      --accent-dk:  #b84e3d;
+      --accent-lt:  rgba(212,97,78,0.15);
+      --accent-txt: #f0a090;
+      --accent-dim: rgba(212,97,78,0.18);
+      --text2:      #f0a090;
+    }
+  </style>
+</head>
+<body data-page="settings">
+
+<div id="app-shell"></div>
+
+<div id="page-wrap">
+  <div class="page-content">
+
+    <div class="page-header">
+      <div>
+        <h1>Settings</h1>
+        <p class="sub">Theme &amp; preferences</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="form-card">
+        <h2 class="card-title">🎨 Appearance</h2>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Theme</div>
+            <div class="setting-sub">Light / dark mode</div>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-theme">🌙</button>
+        </div>
+
+        <div class="setting-row" style="margin-top:8px;">
+          <div>
+            <div class="setting-label">Font size</div>
+            <div class="setting-sub">Adjust verse text size</div>
+          </div>
+          <select id="font-size-select" style="width:auto;padding:6px 10px;font-size:.78rem;">
+            <option value="sm">Small</option>
+            <option value="md">Medium</option>
+            <option value="lg">Large</option>
+            <option value="xl">X-Large</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2 class="card-title">💾 Data</h2>
+        <p class="hint" style="margin-bottom:14px;">
+          Saved verses and preferences are stored locally on this device.
+          <strong>Nothing is uploaded.</strong>
+        </p>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Saved verses</div>
+            <div class="setting-sub" id="saved-count">— items</div>
+          </div>
+          <button class="btn btn-danger btn-sm" id="btn-clear-saved">🗑 Clear</button>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2 class="card-title">🔁 Intro Screen</h2>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Show splash on launch</div>
+            <div class="setting-sub">The animated intro at startup</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-reset-intro">Reset</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="./helpers.js"></script>
+<script src="./menu.js"></script>
+<script>
+'use strict';
+(function () {
+
+  applyFontSize();
+
+  const count = SavedItems.getAll().length;
+  document.getElementById('saved-count').textContent = count + ' verse' + (count !== 1 ? 's' : '');
+
+  const sizeSelect = document.getElementById('font-size-select');
+  sizeSelect.value = AppSettings.get('fontSize') || 'md';
+  sizeSelect.addEventListener('change', () => {
+    AppSettings.set('fontSize', sizeSelect.value);
+    document.body.setAttribute('data-font-size', sizeSelect.value);
+    toast('Font size updated', 'ok');
+  });
+
+  document.getElementById('btn-clear-saved').addEventListener('click', () => {
+    if (!SavedItems.getAll().length) { toast('Nothing to clear', 'err'); return; }
+    if (!confirm('Remove all saved verses? This cannot be undone.')) return;
+    SavedItems.clear();
+    document.getElementById('saved-count').textContent = '0 verses';
+    toast('Saved verses cleared', 'ok');
+  });
+
+  document.getElementById('btn-reset-intro').addEventListener('click', () => {
+    localStorage.removeItem('gnoke_bible_skip_intro');
+    toast('Intro will show on next launch', 'ok');
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Saved — Gnoke Bible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="icon"    type="image/png" href="../global.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <script>(function(){var t=localStorage.getItem('gnoke_bible_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    :root {
+      --accent:     #8b2a1f;
+      --accent-dk:  #6e1f16;
+      --accent-lt:  rgba(139,42,31,0.10);
+      --accent-txt: #6e1f16;
+      --accent-dim: rgba(139,42,31,0.12);
+      --text2:      #8b2a1f;
+    }
+    [data-theme="dark"] {
+      --accent:     #d4614e;
+      --accent-dk:  #b84e3d;
+      --accent-lt:  rgba(212,97,78,0.15);
+      --accent-txt: #f0a090;
+      --accent-dim: rgba(212,97,78,0.18);
+      --text2:      #f0a090;
+    }
+  </style>
+</head>
+<body data-page="saved">
+
+<div id="app-shell"></div>
+
+<div id="page-wrap">
+  <div class="page-content">
+
+    <div class="page-header">
+      <div>
+        <h1>Saved</h1>
+        <p class="sub">Bookmarked verses</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-clear-all">🗑 Clear All</button>
+    </div>
+
+    <div class="item-list" id="saved-list"></div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="./helpers.js"></script>
+<script src="./menu.js"></script>
+<script>
+'use strict';
+(function () {
+
+  applyFontSize();
+
+  function render() {
+    const list  = document.getElementById('saved-list');
+    const items = SavedItems.getAll();
+
+    if (!items.length) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-icon">🔖</span>
+          No saved verses yet.<br>
+          Tap a verse while reading and press 🔖 Save.
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <span class="item-row-icon">🔖</span>
+        <span class="item-row-body">
+          <span class="item-row-title">${_esc(item.title)}</span>
+          <span class="item-row-sub">${_esc(item.subtitle)}</span>
+        </span>
+        <button class="item-row-del" data-id="${item.id}" title="Remove">✕</button>`;
+
+      row.addEventListener('click', e => {
+        if (e.target.classList.contains('item-row-del')) return;
+        const b = item.meta?.bookNum;
+        const c = item.meta?.chNum;
+        window.location.href = (b && c)
+          ? `./read.html?book=${b}&ch=${c}`
+          : './read.html';
+      });
+
+      row.querySelector('.item-row-del').addEventListener('click', e => {
+        e.stopPropagation();
+        SavedItems.remove(item.id);
+        render();
+        toast('Removed', 'ok');
+      });
+
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById('btn-clear-all').addEventListener('click', () => {
+    if (!SavedItems.getAll().length) { toast('Nothing to clear', 'err'); return; }
+    if (!confirm('Remove all saved verses? This cannot be undone.')) return;
+    SavedItems.clear();
+    render();
+    toast('Bookmarks cleared', 'ok');
+  });
+
+  function _esc(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  render();
+
+})();
+</script>
+</body>
+</html>

@@ -1,1 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Browse — Gnoke Bible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="icon"    type="image/png" href="../global.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <script>(function(){var t=localStorage.getItem('gnoke_bible_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    :root {
+      --accent:     #8b2a1f;
+      --accent-dk:  #6e1f16;
+      --accent-lt:  rgba(139,42,31,0.10);
+      --accent-txt: #6e1f16;
+      --accent-dim: rgba(139,42,31,0.12);
+      --text2:      #8b2a1f;
+    }
+    [data-theme="dark"] {
+      --accent:     #d4614e;
+      --accent-dk:  #b84e3d;
+      --accent-lt:  rgba(212,97,78,0.15);
+      --accent-txt: #f0a090;
+      --accent-dim: rgba(212,97,78,0.18);
+      --text2:      #f0a090;
+    }
 
+    .mode-toggle {
+      display: flex; border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+    }
+    .mode-btn {
+      flex: 1; padding: 9px 10px; border: none;
+      background: var(--surface2); color: var(--muted);
+      font-family: var(--font-mono); font-size: .65rem;
+      letter-spacing: .06em; text-transform: uppercase;
+      cursor: pointer; transition: background .15s, color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mode-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+
+    .book-section-label {
+      font-family: var(--font-mono); font-size: .6rem;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--accent); margin: 18px 0 10px;
+    }
+    .book-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px; margin-bottom: 6px;
+    }
+    .book-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .book-card:hover  { border-color: var(--accent); box-shadow: 0 2px 10px var(--accent-lt); }
+    .book-card:active { transform: scale(0.97); }
+    .book-card-name {
+      font-size: .86rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .book-card-meta {
+      font-family: var(--font-mono); font-size: .6rem; color: var(--muted); margin-top: 4px;
+    }
+
+    .verse-result {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .verse-result:hover  { border-color: var(--accent); box-shadow: 0 2px 10px var(--accent-lt); }
+    .verse-result:active { transform: scale(0.98); }
+    .verse-result-ref {
+      font-family: var(--font-mono); font-size: .62rem;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 6px;
+    }
+    .verse-result-text { font-size: .88rem; color: var(--text); line-height: 1.75; }
+    .verse-result-text mark {
+      background: var(--accent-lt); color: var(--accent); border-radius: 3px; padding: 0 2px;
+    }
+
+    .search-status {
+      font-family: var(--font-mono); font-size: .65rem;
+      color: var(--muted); letter-spacing: .05em; margin-bottom: 14px;
+    }
+    .search-status strong { color: var(--text); }
+
+    .verse-block {
+      display: flex; gap: 12px; padding: 9px 6px;
+      border-bottom: 1px solid var(--border);
+      border-radius: 6px; line-height: 1.85;
+    }
+    .verse-block:last-child { border-bottom: none; }
+    .verse-num {
+      font-family: var(--font-mono); font-size: .65rem; color: var(--accent);
+      font-weight: 600; min-width: 26px; padding-top: 3px; flex-shrink: 0;
+    }
+    .verse-text { font-size: .92rem; color: var(--text); }
+    body[data-font-size="sm"] .verse-text { font-size: .8rem; }
+    body[data-font-size="lg"] .verse-text { font-size: 1.05rem; }
+    body[data-font-size="xl"] .verse-text { font-size: 1.18rem; }
+
+    .ch-nav {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    }
+    .ch-nav .nav-label {
+      flex: 1; text-align: center;
+      font-family: var(--font-mono); font-size: .65rem; color: var(--muted);
+    }
+  </style>
+</head>
+<body data-page="browse">
+
+<div id="app-shell"></div>
+
+<div id="page-wrap">
+  <div class="page-content">
+
+    <div class="page-header">
+      <div>
+        <h1>Browse</h1>
+        <p class="sub">King James Version</p>
+      </div>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="books">📚 Books</button>
+      <button class="mode-btn"        data-mode="search">🔍 Search Verses</button>
+    </div>
+
+    <div class="tab-bar" id="testament-tabs">
+      <button class="tab-btn active" data-testament="all">All</button>
+      <button class="tab-btn"        data-testament="ot">Old Testament</button>
+      <button class="tab-btn"        data-testament="nt">New Testament</button>
+    </div>
+
+    <div class="search-wrap" id="search-wrap" style="display:none;">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="search-input" placeholder="Search the scriptures…" autocomplete="off" />
+    </div>
+
+    <div id="results-area"></div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="./kjv.js"></script>
+<script src="./helpers.js"></script>
+<script src="./menu.js"></script>
+<script>
+'use strict';
+(function () {
+
+  applyFontSize();
+
+  const POS_KEY = 'gnoke_bible_browse_pos';
+
+  const BOOK_NAMES = [
+    '',
+    'Genesis','Exodus','Leviticus','Numbers','Deuteronomy',
+    'Joshua','Judges','Ruth','1 Samuel','2 Samuel',
+    '1 Kings','2 Kings','1 Chronicles','2 Chronicles','Ezra',
+    'Nehemiah','Esther','Job','Psalms','Proverbs',
+    'Ecclesiastes','Song of Songs','Isaiah','Jeremiah','Lamentations',
+    'Ezekiel','Daniel','Hosea','Joel','Amos',
+    'Obadiah','Jonah','Micah','Nahum','Habakkuk',
+    'Zephaniah','Haggai','Zechariah','Malachi',
+    'Matthew','Mark','Luke','John','Acts',
+    'Romans','1 Corinthians','2 Corinthians','Galatians','Ephesians',
+    'Philippians','Colossians','1 Thessalonians','2 Thessalonians',
+    '1 Timothy','2 Timothy','Titus','Philemon','Hebrews',
+    'James','1 Peter','2 Peter','1 John','2 John',
+    '3 John','Jude','Revelation'
+  ];
+
+  const DB = new Map();
+  for (const [bookNum, ch, v, text] of KJV) {
+    if (!DB.has(bookNum)) DB.set(bookNum, new Map());
+    const book = DB.get(bookNum);
+    if (!book.has(ch)) book.set(ch, []);
+    book.get(ch).push({ v, text });
+  }
+
+  let _mode        = 'books';
+  let _testament   = 'all';
+  let _searchTimer = null;
+  let _bookNum     = null;
+  let _chNum       = null;
+
+  function savePos() {
+    if (_bookNum && _chNum)
+      localStorage.setItem(POS_KEY, JSON.stringify({ bookNum: _bookNum, chNum: _chNum }));
+  }
+
+  /* ── Verses — rendered inside browse, no navigation ── */
+  function renderVerses(bookNum, chNum) {
+    _bookNum = bookNum; _chNum = chNum;
+    savePos();
+
+    const area     = document.getElementById('results-area');
+    const bookName = BOOK_NAMES[bookNum];
+    const verses   = DB.get(bookNum)?.get(chNum) || [];
+    const maxCh    = DB.get(bookNum)?.size || 1;
+
+    area.innerHTML = '';
+
+    // Back to chapters
+    const back = document.createElement('button');
+    back.className = 'btn btn-ghost btn-sm';
+    back.style.marginBottom = '14px';
+    back.textContent = '← Chapters';
+    back.addEventListener('click', () => renderChapters(bookNum));
+    area.appendChild(back);
+
+    // Title
+    const eyebrow = document.createElement('div');
+    eyebrow.className = 'book-section-label';
+    eyebrow.textContent = bookName;
+    area.appendChild(eyebrow);
+
+    const title = document.createElement('h2');
+    title.style.cssText = "font-family:'Playfair Display',serif;font-size:1.3rem;margin:0 0 4px;";
+    title.textContent = bookName + ' ' + chNum;
+    area.appendChild(title);
+
+    const sub = document.createElement('p');
+    sub.style.cssText = 'font-family:var(--font-mono);font-size:.62rem;color:var(--muted);margin:0 0 16px;text-transform:uppercase;letter-spacing:.06em;';
+    sub.textContent = 'Chapter ' + chNum + ' · ' + verses.length + ' verses · KJV';
+    area.appendChild(sub);
+
+    // Prev / Next nav
+    function makeNav() {
+      const nav = document.createElement('div');
+      nav.className = 'ch-nav';
+      const prev = document.createElement('button');
+      prev.className = 'btn btn-ghost btn-sm';
+      prev.textContent = '← Prev';
+      prev.disabled = chNum <= 1 && bookNum <= 1;
+      prev.addEventListener('click', () => {
+        if (_chNum > 1) renderVerses(_bookNum, _chNum - 1);
+        else if (_bookNum > 1) renderVerses(_bookNum - 1, DB.get(_bookNum - 1).size);
+      });
+      const lbl = document.createElement('span');
+      lbl.className = 'nav-label';
+      lbl.textContent = 'Ch ' + chNum + ' / ' + maxCh;
+      const next = document.createElement('button');
+      next.className = 'btn btn-ghost btn-sm';
+      next.textContent = 'Next →';
+      next.disabled = chNum >= maxCh && bookNum >= 66;
+      next.addEventListener('click', () => {
+        if (_chNum < DB.get(_bookNum).size) renderVerses(_bookNum, _chNum + 1);
+        else if (_bookNum < 66) renderVerses(_bookNum + 1, 1);
+      });
+      nav.appendChild(prev); nav.appendChild(lbl); nav.appendChild(next);
+      return nav;
+    }
+
+    area.appendChild(makeNav());
+
+    const list = document.createElement('div');
+    list.style.paddingBottom = '20px';
+    verses.forEach(({ v, text }) => {
+      const row = document.createElement('div');
+      row.className = 'verse-block';
+      row.innerHTML = `<span class="verse-num">${v}</span><span class="verse-text">${_esc(text)}</span>`;
+      list.appendChild(row);
+    });
+    area.appendChild(list);
+    area.appendChild(makeNav());
+
+    document.getElementById('page-wrap').scrollTop = 0;
+  }
+
+  /* ── Chapter picker ── */
+  function renderChapters(bookNum) {
+    _bookNum = bookNum;
+    const area     = document.getElementById('results-area');
+    const chapters = DB.get(bookNum);
+    if (!chapters) return;
+
+    area.innerHTML = '';
+
+    const back = document.createElement('button');
+    back.className = 'btn btn-ghost btn-sm';
+    back.style.marginBottom = '14px';
+    back.textContent = '← Books';
+    back.addEventListener('click', () => {
+      const letter = renderChapters._fromLetter;
+      if (letter) renderBooksForLetter(letter);
+      else renderBooks();
+    });
+    area.appendChild(back);
+
+    const title = document.createElement('div');
+    title.className = 'book-section-label';
+    title.textContent = BOOK_NAMES[bookNum];
+    area.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;';
+    chapters.forEach((_, chNum) => {
+      const btn = document.createElement('div');
+      btn.className = 'book-card';
+      btn.innerHTML = `<div class="book-card-name" style="font-size:1rem;text-align:center;">${chNum}</div>`;
+      btn.addEventListener('click', () => renderVerses(bookNum, chNum));
+      grid.appendChild(btn);
+    });
+    area.appendChild(grid);
+  }
+
+  /* ── Books filtered by letter ── */
+  function renderBooksForLetter(letter) {
+    const area = document.getElementById('results-area');
+    area.innerHTML = '';
+    document.getElementById('testament-tabs').style.display = 'none';
+
+    const back = document.createElement('button');
+    back.className = 'btn btn-ghost btn-sm';
+    back.style.marginBottom = '14px';
+    back.textContent = '← All Books';
+    back.addEventListener('click', () => {
+      document.getElementById('testament-tabs').style.display = '';
+      renderBooks();
+    });
+    area.appendChild(back);
+
+    const label = document.createElement('div');
+    label.className = 'book-section-label';
+    label.textContent = 'Books · ' + letter;
+    area.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'book-grid';
+    for (let b = 1; b <= 66; b++) {
+      const name = BOOK_NAMES[b];
+      if (name.replace(/^\d+\s*/, '')[0].toUpperCase() !== letter.toUpperCase()) continue;
+      const chapters = DB.get(b);
+      const chCount  = chapters ? chapters.size : 0;
+      const vCount   = chapters ? [...chapters.values()].reduce((s, c) => s + c.length, 0) : 0;
+      const card = document.createElement('div');
+      card.className = 'book-card';
+      card.innerHTML =
+        `<div class="book-card-name">${name}</div>` +
+        `<div class="book-card-meta">${chCount} ch · ${vCount.toLocaleString()} v</div>`;
+      card.addEventListener('click', () => { renderChapters._fromLetter = letter; renderChapters(b); });
+      grid.appendChild(card);
+    }
+    area.appendChild(grid);
+  }
+
+  /* ── All books ── */
+  function renderBooks() {
+    const area = document.getElementById('results-area');
+    area.innerHTML = '';
+
+    const otBooks = [], ntBooks = [];
+    for (let b = 1; b <= 66; b++) {
+      const chapters = DB.get(b);
+      const chCount  = chapters ? chapters.size : 0;
+      const vCount   = chapters ? [...chapters.values()].reduce((s, c) => s + c.length, 0) : 0;
+      const item = { bookNum: b, name: BOOK_NAMES[b], chapters: chCount, verses: vCount };
+      if (b <= 39) otBooks.push(item); else ntBooks.push(item);
+    }
+
+    function makeSection(label, books) {
+      if (!books.length) return;
+      const lbl = document.createElement('div');
+      lbl.className = 'book-section-label';
+      lbl.textContent = label;
+      area.appendChild(lbl);
+      const grid = document.createElement('div');
+      grid.className = 'book-grid';
+      books.forEach(b => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML =
+          `<div class="book-card-name">${b.name}</div>` +
+          `<div class="book-card-meta">${b.chapters} ch · ${b.verses.toLocaleString()} v</div>`;
+        card.addEventListener('click', () => { renderChapters._fromLetter = null; renderChapters(b.bookNum); });
+        grid.appendChild(card);
+      });
+      area.appendChild(grid);
+    }
+
+    if (_testament === 'all' || _testament === 'ot') makeSection('Old Testament', otBooks);
+    if (_testament === 'all' || _testament === 'nt') makeSection('New Testament', ntBooks);
+  }
+
+  /* ── Search ── */
+  function runSearch(query) {
+    const area = document.getElementById('results-area');
+    query = query.trim();
+
+    if (query.length < 2) {
+      area.innerHTML = `<div class="empty-state"><span class="empty-icon">📖</span>Type at least 2 characters to search all 31,102 verses.</div>`;
+      return;
+    }
+
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const hits  = KJV.filter(([,,,text]) => words.every(w => text.toLowerCase().includes(w)));
+    const total = hits.length;
+    const shown = hits.slice(0, 80);
+
+    area.innerHTML = '';
+    const status = document.createElement('div');
+    status.className = 'search-status';
+    status.innerHTML = total === 0
+      ? 'No results for <strong>"' + _esc(query) + '"</strong>'
+      : '<strong>' + total.toLocaleString() + '</strong> result' + (total !== 1 ? 's' : '') + (total > 80 ? ' — showing first 80' : '');
+    area.appendChild(status);
+
+    if (!total) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = `<span class="empty-icon">🔍</span>No verses found.`;
+      area.appendChild(empty);
+      return;
+    }
+
+    shown.forEach(([bookNum, ch, v, text]) => {
+      const ref  = BOOK_NAMES[bookNum] + ' ' + ch + ':' + v;
+      const card = document.createElement('div');
+      card.className = 'verse-result';
+      card.innerHTML =
+        `<div class="verse-result-ref">${ref}</div>` +
+        `<div class="verse-result-text">${highlight(_esc(text), words)}</div>`;
+      card.addEventListener('click', () => renderVerses(bookNum, ch));
+      area.appendChild(card);
+    });
+  }
+
+  function highlight(text, words) {
+    let out = text;
+    words.forEach(w => {
+      const re = new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+      out = out.replace(re, '<mark>$1</mark>');
+    });
+    return out;
+  }
+
+  function _esc(str) {
+    return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  /* ── UI wiring ── */
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      _mode = btn.dataset.mode;
+      const tabs = document.getElementById('testament-tabs');
+      const sw   = document.getElementById('search-wrap');
+      if (_mode === 'books') {
+        tabs.style.display = ''; sw.style.display = 'none'; renderBooks();
+      } else {
+        tabs.style.display = 'none'; sw.style.display = '';
+        document.getElementById('search-input').focus();
+        runSearch(document.getElementById('search-input').value);
+      }
+    });
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      _testament = btn.dataset.testament;
+      renderBooks();
+    });
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => runSearch(e.target.value), 300);
+  });
+
+  /* ── Startup ── */
+  (function () {
+    const params = new URLSearchParams(location.search);
+    const letter = params.get('letter');
+    if (letter) {
+      renderChapters._fromLetter = letter;
+      renderBooksForLetter(letter);
+      return;
+    }
+    try {
+      const pos = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+      if (pos?.bookNum && pos?.chNum) {
+        renderVerses(pos.bookNum, pos.chNum);
+        return;
+      }
+    } catch (_) {}
+    renderBooks();
+  })();
+
+})();
+</script>
+</body>
+</html>

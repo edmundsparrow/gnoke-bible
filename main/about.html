@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>About — Gnoke Bible</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="icon"    type="image/png" href="../global.png" />
+  <link rel="manifest" href="../manifest.json" />
+  <script>(function(){var t=localStorage.getItem('gnoke_bible_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+  <style>
+    :root {
+      --accent:     #8b2a1f;
+      --accent-dk:  #6e1f16;
+      --accent-lt:  rgba(139,42,31,0.10);
+      --accent-txt: #6e1f16;
+      --accent-dim: rgba(139,42,31,0.12);
+      --text2:      #8b2a1f;
+    }
+    [data-theme="dark"] {
+      --accent:     #d4614e;
+      --accent-dk:  #b84e3d;
+      --accent-lt:  rgba(212,97,78,0.15);
+      --accent-txt: #f0a090;
+      --accent-dim: rgba(212,97,78,0.18);
+      --text2:      #f0a090;
+    }
+  </style>
+</head>
+<body data-page="about">
+
+<div id="app-shell"></div>
+
+<div id="page-wrap">
+  <div class="page-content">
+
+    <div class="page-header">
+      <div>
+        <h1>About</h1>
+        <p class="sub">Gnoke Bible · v1.0</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="form-card">
+        <h2 class="card-title">✝️ Gnoke Bible</h2>
+        <p class="hint">
+          The complete King James Version — all 66 books, 1,189 chapters,
+          and 31,102 verses — searchable and bookmarkable entirely in your browser.<br /><br />
+          Works completely offline after the first load.
+          Your bookmarks never leave the device.
+          No account. No server. No tracking.
+        </p>
+      </div>
+
+      <div class="form-card">
+        <h2 class="card-title">⚙️ Under The Hood</h2>
+        <table class="about-table">
+          <tbody>
+            <tr><td>Bible text</td>  <td>King James Version (KJV) · Public domain</td></tr>
+            <tr><td>Data</td>        <td>Inline JS array (kjv.js) · no fetch needed</td></tr>
+            <tr><td>Bookmarks</td>   <td>localStorage · up to 100 verses</td></tr>
+            <tr><td>Search</td>      <td>Full-text · all 31,102 verses</td></tr>
+            <tr><td>Network</td>     <td>None required after first load</td></tr>
+            <tr><td>Stack</td>       <td>HTML · CSS · Vanilla JS · PWA</td></tr>
+            <tr><td>Version</td>     <td>v1.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-card">
+        <h2 class="card-title">👤 Author</h2>
+        <p class="hint">
+          <strong>Edmund Sparrow</strong><br />
+          Part of the <strong>Gnoke Suite</strong> — offline-first tools
+          for developers, retailers, and independent builders.
+        </p>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+          <a class="btn btn-ghost btn-sm" href="mailto:ekongmikpe@gmail.com">✉ Email</a>
+          <a class="btn btn-ghost btn-sm" href="https://github.com/edmundsparrow" target="_blank" rel="noopener">⌥ GitHub</a>
+          <a class="btn btn-ghost btn-sm" href="https://selar.com/showlove/edmundsparrow" target="_blank" rel="noopener">❤️ Coffee</a>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2 class="card-title">📜 License</h2>
+        <p class="hint">
+          App code is free and open source under the
+          <strong>GNU General Public License v3.0</strong>.<br /><br />
+          The King James Version Bible text is in the
+          <strong>public domain</strong> worldwide.
+        </p>
+        <p class="hint" style="margin-top:10px;font-family:var(--font-mono);font-size:.66rem;color:var(--muted);">
+          © 2026 Edmund Sparrow — Gnoke Suite
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="./helpers.js"></script>
+<script src="./menu.js"></script>
+</body>
+</html>
